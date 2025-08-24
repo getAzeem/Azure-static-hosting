@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Daily Grind | Artisan Bakery, Premium Coffee & Workspace</title>
+    <meta name="description" content="Experience the perfect blend of artisanal baked goods, single-origin coffee, and a productive, inspiring co-working atmosphere at The Daily Grind.">
+    
+    <style>
+        /* --- Google Fonts --- */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500&display=swap');
+
+        /* --- CSS Reset & Basic Styles --- */
+        :root {
+            --primary-color: #6F4E37; /* Coffee Brown */
+            --secondary-color: #F5F5DC; /* Beige */
+            --dark-text: #333333;
+            --light-text: #FFFFFF;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Roboto', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            line-height: 1.6;
+            background-color: #FCFBF8;
+            color: var(--dark-text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            overflow: hidden;
+            padding: 0 2rem;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-heading);
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: 3.5rem; }
+        h2 { font-size: 2.5rem; text-align: center; margin-top: 2rem; }
+        h3 { font-size: 1.8rem; }
+
+        p {
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: var(--light-text);
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #8B6B55;
+        }
+
+        /* --- Header & Navigation --- */
+        .main-header {
+            background: var(--light-text);
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-header .logo {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+        }
+
+        .main-nav a {
+            color: var(--dark-text);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        
+        .main-nav a:hover {
+            color: var(--primary-color);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1559925393-8be0ec4767c8?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600') no-repeat center center/cover;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--light-text);
+        }
+
+        .hero h1 {
+            color: var(--light-text);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        /* --- Features Section --- */
+        #features {
+            padding: 4rem 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--light-text);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .feature-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        /* --- Menu Highlight Section --- */
+        #menu-highlight {
+            padding: 4rem 0;
+            background-color: var(--secondary-color);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+            align-items: center;
+        }
+
+        .menu-item {
+            background: var(--light-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .menu-item p {
+            font-size: 0.95rem;
+        }
+
+        /* --- CTA Section --- */
+        #cta {
+            padding: 5rem 0;
+            text-align: center;
+            background: var(--light-text);
+        }
+
+        #cta p {
+            max-width: 700px;
+            margin: 1rem auto 2rem;
+        }
+
+        /* --- Footer --- */
+        .main-footer {
+            background: var(--dark-text);
+            color: var(--light-text);
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .main-footer p {
+            font-size: 0.9rem;
+            margin: 0;
+            opacity: 0.8;
+        }
+        
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            h2 { font-size: 2rem; }
+
+            .main-header .container {
+                flex-direction: column;
+            }
+
+            .main-nav ul {
+                margin-top: 1rem;
+            }
+
+            .features-grid,
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <a href="#" class="logo">The Daily Grind</a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#features">Our Experience</a></li>
+                    <li><a href="#menu-highlight">Menu</a></li>
+                    <li><a href="#cta">Visit Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Your Perfect Blend of Work & Taste</h1>
+            <p>Discover an oasis of flavor and focus. Premium coffee, artisanal pastries, and an inspiring atmosphere await you.</p>
+            <a href="#menu-highlight" class="btn">Explore Our Menu</a>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <h2>A Premium Caffe Experience</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">☕</div>
+                    <h3>Single-Origin Coffee</h3>
+                    <p>Sourced from the world's finest estates and expertly roasted in-house for a truly unforgettable cup.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🥐</div>
+                    <h3>Artisanal Bakery</h3>
+                    <p>From flaky croissants to decadent cakes, every item is handcrafted daily with passion and the finest ingredients.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">💻</div>
+                    <h3>Inspiring Workspace</h3>
+                    <p>High-speed Wi-Fi, ample power outlets, and a vibrant yet calm environment designed for your productivity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="menu-highlight">
+        <div class="container">
+            <h2>Freshly Made, Daily</h2>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <h3>Signature Espresso</h3>
+                    <p>A rich, full-bodied shot with notes of dark chocolate and toasted almond. The heart of all our coffee creations.</p>
+                </div>
+                <div class="menu-item">
+                    <h3>Almond Croissant</h3>
+                    <p>Our best-seller. A perfectly laminated croissant filled with rich almond frangipane and topped with toasted almonds.</p>
+                </div>
+                <div class="menu-item">
+                    <h3>Avocado Toast</h3>
+                    <p>Thick-cut sourdough toast with fresh avocado, chili flakes, a drizzle of olive oil, and a sprinkle of sea salt.</p>
+                </div>
+                <div class="menu-item">
+                    <h3>Cold Brew</h3>
+                    <p>Steeped for 18 hours for a smooth, low-acidity, and highly caffeinated coffee experience. Served over ice.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cta">
+        <div class="container">
+            <h2>Find Your Focus. Treat Yourself.</h2>
+            <p>Whether you're starting your day, meeting a client, or settling in for a productive afternoon, we have the perfect spot for you. Come experience The Daily Grind.</p>
+            <a href="#" class="btn">Get Directions</a>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 The Daily Grind. All Rights Reserved.</p>
+        <p>A delicious demo for Terraform static site hosting.</p>
+    </footer>
+
+</body>
+</html>
