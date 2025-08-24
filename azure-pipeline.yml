@@ -11,12 +11,18 @@ variables:
     value: '$(System.DefaultWorkingDirectory)'
 
 pool:
-  name: <Your-AWS-EC2-Agent-Pool-Name>  # Replace with your actual agent pool name
+  name: azure-agent001
 
 steps:
   # Checkout the code
   - checkout: self
     displayName: 'Checkout code'
+
+  # Install unzip first
+  - script: |
+      sudo apt-get update
+      sudo apt-get install -y unzip
+    displayName: 'Install unzip'
 
   # Install Terraform
   - task: TerraformInstaller@0
@@ -24,30 +30,15 @@ steps:
     inputs:
       terraformVersion: '$(terraformVersion)'
 
-  # Install Azure CLI (required for authentication)
-  - script: |
-      curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-    displayName: 'Install Azure CLI'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-
-  # Azure CLI login (using Service Principal)
-  - task: AzureCLI@2
-    displayName: 'Azure Login'
-    inputs:
-      azureSubscription: '<Your-Azure-Service-Connection-Name>'  # Replace with your Azure service connection name
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
-      inlineScript: |
-        echo "Logged into Azure successfully"
-
-  # Terraform initialization
+  # Terraform initialization with proper service connection
   - task: TerraformTaskV4@4
     displayName: 'Terraform Init'
     inputs:
       provider: 'azurerm'
       command: 'init'
       workingDirectory: '$(workingDirectory)'
-      backendServiceArm: '<Your-Azure-Service-Connection-Name>'  # Replace with your Azure service connection name
+      environmentServiceNameAzureRM: 'AzureService'  # Added this line
+      backendServiceArm: 'AzureService'
       backendAzureRmResourceGroupName: 'Backend-static-hosting'
       backendAzureRmStorageAccountName: 'tfstate7800'
       backendAzureRmContainerName: 'tfstate'
@@ -60,6 +51,7 @@ steps:
       provider: 'azurerm'
       command: 'plan'
       workingDirectory: '$(workingDirectory)'
+      environmentServiceNameAzureRM: 'AzureService'  # Added this line
       commandOptions: '-out=tfplan'
 
   # Terraform apply
@@ -69,52 +61,18 @@ steps:
       provider: 'azurerm'
       command: 'apply'
       workingDirectory: '$(workingDirectory)'
+      environmentServiceNameAzureRM: 'AzureService'  # Added this line
       commandOptions: '-auto-approve tfplan'
 
-  # Upload index.html and 404.html to storage account
-  - task: AzureCLI@2
-    displayName: 'Upload HTML files to Storage Account'
-    inputs:
-      azureSubscription: '<Your-Azure-Service-Connection-Name>'  # Replace with your Azure service connection name
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
-      inlineScript: |
-        # Get storage account name from Terraform output
-        STORAGE_ACCOUNT_NAME=$(terraform output -raw storage_account_name)
-        echo "Storage Account Name: $STORAGE_ACCOUNT_NAME"
-        
-        # Upload index.html
-        az storage blob upload \
-          --account-name $STORAGE_ACCOUNT_NAME \
-          --container-name '$web' \
-          --name index.html \
-          --file index.html \
-          --overwrite \
-          --content-type 'text/html'
-        
-        # Upload 404.html
-        az storage blob upload \
-          --account-name $STORAGE_ACCOUNT_NAME \
-          --container-name '$web' \
-          --name 404.html \
-          --file 404.html \
-          --overwrite \
-          --content-type 'text/html'
-        
-        echo "Files uploaded successfully"
-
-  # Display website URL
-  - task: AzureCLI@2
+  # Display website URL using Terraform output
+  - task: TerraformTaskV4@4
     displayName: 'Display Website URL'
     inputs:
-      azureSubscription: '<Your-Azure-Service-Connection-Name>'  # Replace with your Azure service connection name
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
-      inlineScript: |
-        WEB_HOST=$(terraform output -raw primary_web_host)
-        echo "##vso[task.setvariable variable=websiteUrl]$WEB_HOST"
-        echo "Your static website is now live at: $WEB_HOST"
-        echo "##vso[task.complete result=Succeeded;]Website deployed successfully"
+      provider: 'azurerm'
+      command: 'output'
+      workingDirectory: '$(workingDirectory)'
+      environmentServiceNameAzureRM: 'AzureService'  # Added this line
+      commandOptions: '-raw primary_web_host'
 
   # Optional: Clean up terraform plan file
   - script: |
