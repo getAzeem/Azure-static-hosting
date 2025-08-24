@@ -64,15 +64,14 @@ steps:
       environmentServiceNameAzureRM: 'AzureService'  # Added this line
       commandOptions: '-auto-approve tfplan'
 
-  # Display website URL using Terraform output
-  - task: TerraformTaskV4@4
+  # Display website URL using script (simpler approach)
+  - script: |
+      WEB_HOST=$(terraform output -raw primary_web_host)
+      echo "##vso[task.setvariable variable=websiteUrl]$WEB_HOST"
+      echo "Your static website is now live at: $WEB_HOST"
+      echo "Website deployed successfully!"
     displayName: 'Display Website URL'
-    inputs:
-      provider: 'azurerm'
-      command: 'output'
-      workingDirectory: '$(workingDirectory)'
-      environmentServiceNameAzureRM: 'AzureService'  # Added this line
-      commandOptions: '-raw primary_web_host'
+    workingDirectory: '$(workingDirectory)'
 
   # Optional: Clean up terraform plan file
   - script: |
