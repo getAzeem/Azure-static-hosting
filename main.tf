@@ -34,11 +34,12 @@ resource "azurerm_storage_account" "storage_account" {
   }
 }
 
-resource "azurerm_storage_blob" "example" {
+# Upload only index.html (main page)
+resource "azurerm_storage_blob" "index" {
   name                   = "index.html"
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = "$web"
   type                   = "Block"
   content_type           = "text/html"
-  source                 = "index.html"
+  source_content         = file("${path.module}/index.html")
 }
