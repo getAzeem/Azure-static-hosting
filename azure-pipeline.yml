@@ -1,80 +1,71 @@
-# azure-pipeline.yml
 trigger:
   - main
 
-pr: none
+pr:
+  branches:
+    include:
+      - main  # Run on PRs targeting main
 
-variables:
-  - name: terraformVersion
-    value: '1.5.0'
-  - name: workingDirectory
-    value: '$(System.DefaultWorkingDirectory)'
+stages:
+  - stage: 'Test_and_Plan'
+    jobs:
+    - job: 'Terraform'
+      pool:
+        name: azure-agent001
+      steps:
+        - checkout: self
+        - script: sudo apt-get update && sudo apt-get install -y unzip
+        - task: TerraformInstaller@0
+          inputs: { terraformVersion: '$(terraformVersion)' }
+        - task: TerraformTaskV4@4
+          name: terraformInit
+          inputs:
+            command: 'init'
+            workingDirectory: '$(workingDirectory)'
+            environmentServiceNameAzureRM: 'AzureService'
+        - task: TerraformTaskV4@4
+          name: terraformValidate
+          inputs:
+            command: 'validate'
+            workingDirectory: '$(workingDirectory)'
+        - task: TerraformTaskV4@4
+          name: terraformPlan
+          inputs:
+            command: 'plan'
+            workingDirectory: '$(workingDirectory)'
+            environmentServiceNameAzureRM: 'AzureService'
+            commandOptions: '-out=tfplan'
+        - publish: '$(workingDirectory)/tfplan'
+          artifact: tfplan
 
-pool:
-  name: azure-agent001
-
-steps:
-  # Checkout the code
-  - checkout: self
-    displayName: 'Checkout code'
-
-  # Install unzip first
-  - script: |
-      sudo apt-get update
-      sudo apt-get install -y unzip
-    displayName: 'Install unzip'
-
-  # Install Terraform
-  - task: TerraformInstaller@0
-    displayName: 'Install Terraform'
-    inputs:
-      terraformVersion: '$(terraformVersion)'
-
-  # Terraform initialization with proper service connection
-  - task: TerraformTaskV4@4
-    displayName: 'Terraform Init'
-    inputs:
-      provider: 'azurerm'
-      command: 'init'
-      workingDirectory: '$(workingDirectory)'
-      environmentServiceNameAzureRM: 'AzureService'  # Added this line
-      backendServiceArm: 'AzureService'
-      backendAzureRmResourceGroupName: 'Backend-static-hosting'
-      backendAzureRmStorageAccountName: 'tfstate7800'
-      backendAzureRmContainerName: 'tfstate'
-      backendAzureRmKey: 'terraform.tfstate'
-
-  # Terraform plan
-  - task: TerraformTaskV4@4
-    displayName: 'Terraform Plan'
-    inputs:
-      provider: 'azurerm'
-      command: 'plan'
-      workingDirectory: '$(workingDirectory)'
-      environmentServiceNameAzureRM: 'AzureService'  # Added this line
-      commandOptions: '-out=tfplan'
-
-  # Terraform apply
-  - task: TerraformTaskV4@4
-    displayName: 'Terraform Apply'
-    inputs:
-      provider: 'azurerm'
-      command: 'apply'
-      workingDirectory: '$(workingDirectory)'
-      environmentServiceNameAzureRM: 'AzureService'  # Added this line
-      commandOptions: '-auto-approve tfplan'
-
-  # Display website URL using script (simpler approach)
-  - script: |
-      WEB_HOST=$(terraform output -raw primary_web_host)
-      echo "##vso[task.setvariable variable=websiteUrl]$WEB_HOST"
-      echo "Your static website is now live at: $WEB_HOST"
-      echo "Website deployed successfully!"
-    displayName: 'Display Website URL'
-    workingDirectory: '$(workingDirectory)'
-
-  # Optional: Clean up terraform plan file
-  - script: |
-      rm -f tfplan
-    displayName: 'Clean up temporary files'
-    condition: always()
+  - stage: 'Deploy'
+    dependsOn: 'Test_and_Plan'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+    - deployment: 'Terraform'
+      pool:
+        name: azure-agent001
+      environment: 'Production' # This allows you to set manual approvals in Azure DevOps
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - download: current
+              artifact: tfplan
+            - task: TerraformInstaller@0
+              inputs: { terraformVersion: '$(terraformVersion)' }
+            - task: TerraformTaskV4@4
+              inputs:
+                command: 'init'
+                workingDirectory: '$(workingDirectory)'
+                environmentServiceNameAzureRM: 'AzureService'
+            - task: TerraformTaskV4@4
+              inputs:
+                command: 'apply'
+                workingDirectory: '$(workingDirectory)'
+                environmentServiceNameAzureRM: 'AzureService'
+                commandOptions: '-auto-approve tfplan'
+            - script: |
+                WEB_HOST=$(terraform output -raw primary_web_host)
+                echo "##vso[task.setvariable variable=websiteUrl;isOutput=true]$WEB_HOST"
+                echo "## Website URL: $WEB_HOST"
